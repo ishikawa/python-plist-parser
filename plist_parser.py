@@ -46,7 +46,7 @@ class XmlPropertyListParser(handler.ContentHandler):
     def startDocument(self):
         self.__stack = []
         self.__key = None
-        self.__characters = []
+        self.__characters = None
 
     def startElement(self, name, attributes):
         if name in XmlPropertyListParser.START_CALLBACKS:
