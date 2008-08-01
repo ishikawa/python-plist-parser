@@ -1,0 +1,61 @@
+h2. Property Lists Parser for Python
+
+This is a Python parser class for Apple's "Property Lists":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/ XML. A Property Lists is a data representation used in Apple's Mac OS X as a convenient way to store standard object types, such as string, number, boolean, and container objects (dictionary and array). Either datetime and binary data are also supported.
+
+
+h3. Quick start
+
+You can run self-contained test, and parse any property list by running @plist_parser.py@. For example, parsing iTunes Liberary on your mac:
+<pre><code>
+% python ./plist_parser.py ~/"Music/iTunes/iTunes Music Library.xml"
+</code></pre>
+
+
+h3. Usage
+
+This project provides only one class @XmlPropertyListParser@ in one file @plist_parser.py@. You can use this class by importing, or copy and paste on your code (Feel free to do it).
+
+To parse a property list xml. First, instantiates @XmlPropertyListParser@:
+
+<pre><code>
+>>> parser = XmlPropertyListParser()
+</code></pre>
+
+Second, invoke @parse@ method with XML contents or file-like object.
+
+<pre><code>
+>>> parser.parse("""
+<plist version="1.0">
+  <dict>
+    <key>Python</key>
+    <string>.py</string>
+  </dict>
+</plist>
+""")
+{u'Python': u'.py'}
+</code></pre>
+
+or
+
+<pre><code>
+stream = open(...)
+try:
+  plist = parser.parse(stream)
+finally:
+  stream.close()
+</code></pre>
+
+
+h3. Requirement
+
+You need no third-party library other than **Python 2.4** or higher.
+
+
+h3. Copyright
+
+Copyright (c) 2008 **Takanori Ishikawa** "&lt;takanori.ishikawa&#64;gmail.com&gt;":mailto:takanori.ishikawa@gmail.com, All rights reserved.
+
+
+h3. License
+
+The MIT license. See the "@LICENSE@":http://github.com/ishikawa/pygments-applescript-lexer/tree/master/LICENSE file for more details.

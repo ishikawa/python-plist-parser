@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>long long string item</key>
+	<string>There, he campaigned for the amalgamation of Northern and Southern Rhodesia. Although unsuccessful, he succeeded in the formation of the Federation of Rhodesia and Nyasaland</string>
+	<key>string item</key>
+	<string>string value</string>
+	<key>integer number item</key>
+	<integer>12345</integer>
+	<key>real number item</key>
+	<real>123.45</real>
+	<key>nested dictionary</key>
+	<dict>
+		<key>true item</key>
+		<true/>
+		<key>false item</key>
+		<false/>
+		<key>array item</key>
+		<array>
+			<data>aGVsbG8=</data>
+			<date>2008-08-01T06:16:37Z</date>
+			<array>
+				<dict>
+					<key>item</key>
+					<integer>1</integer>
+				</dict>
+			</array>
+		</array>
+	</dict>
+</dict>
+</plist>
