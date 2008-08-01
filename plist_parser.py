@@ -12,7 +12,6 @@ a property list file and get back a python native data structure.
 
 .. _Property Lists: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
 """
-import sys
 import xml.sax
 from xml.sax import handler, xmlreader
 
@@ -20,7 +19,7 @@ from xml.sax import handler, xmlreader
 class XmlPropertyListParser(handler.ContentHandler):
     """
     The ``XmlPropertyListParser`` class provides methods that
-    convert ``Property List``_ objects from xml format.
+    convert `Property Lists`_ objects from xml format.
     Property list objects include ``string``, ``unicode``,
     ``list``, ``dict``, ``datetime``, and ``int`` or ``float``.
 
@@ -200,6 +199,7 @@ if __name__ == '__main__':
     # For example, parsing iTunes Liberary on your mac.
     # % python ./plist_parser.py ~/"Music/iTunes/iTunes Music Library.xml"
     #
+    import sys
     import doctest
     doctest.testmod()
 

@@ -1,6 +1,8 @@
 h2. Property Lists Parser for Python
 
-This is a Python parser class for Apple's "Property Lists":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/ XML. A Property Lists is a data representation used in Apple's Mac OS X as a convenient way to store standard object types, such as string, number, boolean, and container objects (dictionary and array). Either datetime and binary data are also supported.
+This is a Python parser class for Apple's "Property Lists":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/ XML.
+
+A Property Lists is a data representation used in Apple's Mac OS X as a convenient way to store standard object types, such as string, number, boolean, and container objects (dictionary and array). Either datetime and binary data are also supported.
 
 
 h3. Quick start
@@ -25,12 +27,12 @@ Second, invoke @parse@ method with XML contents or file-like object.
 
 <pre><code>
 >>> parser.parse("""
-<plist version="1.0">
-  <dict>
-    <key>Python</key>
-    <string>.py</string>
-  </dict>
-</plist>
+&lt;plist version=&quot;1.0&quot;&gt;
+  &lt;dict&gt;
+    &lt;key&gt;Python&lt;/key&gt;
+    &lt;string&gt;.py&lt;/string&gt;
+  &lt;/dict&gt;
+&lt;/plist&gt;
 """)
 {u'Python': u'.py'}
 </code></pre>
