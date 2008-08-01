@@ -4,4 +4,4 @@ This is a collection of the various things which it would be nice to include in 
 
 * Performance improvement
 * More tests
-* Supporting other formats (Old ASCII style, Binary form)?
+* Supporting other formats ("Old ASCII style":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/Articles/OldStylePListsConcept.html#//apple_ref/doc/uid/20001012, "Binary form":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/Articles/SerializedPListsConcept.html#//apple_ref/doc/uid/20001013)?

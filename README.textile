@@ -27,12 +27,12 @@ Second, invoke @parse@ method with XML contents or file-like object.
 
 <pre><code>
 >>> parser.parse("""
-&lt;plist version=&quot;1.0&quot;&gt;
-  &lt;dict&gt;
-    &lt;key&gt;Python&lt;/key&gt;
-    &lt;string&gt;.py&lt;/string&gt;
-  &lt;/dict&gt;
-&lt;/plist&gt;
+<plist version="1.0">
+  <dict>
+    <key>Python</key>
+    <string>.py</string>
+  </dict>
+</plist>
 """)
 {u'Python': u'.py'}
 </code></pre>
