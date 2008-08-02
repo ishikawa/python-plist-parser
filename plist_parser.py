@@ -71,11 +71,10 @@ class XmlPropertyListParser(handler.ContentHandler):
     # XmlPropertyListParser private
     # ------------------------------------------------
     def _push_value(self, value):
-        values = self.__stack
-        if not values:
+        if not self.__plist:
             self.__plist = value
         else:
-            top = values[-1]
+            top = self.__stack[-1]
             if isinstance(top, dict):
                 self._assert(self.__key is not None, "Missing key for dictionary.")
                 top[self.__key] = value
