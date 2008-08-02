@@ -146,7 +146,9 @@ class XmlPropertyListParser(handler.ContentHandler):
             if value is None:
                 break
             components.append(int(value))
-
+        
+        while len(components) < 3:
+            components.append(1)
         d = datetime.datetime(*components)
         self._push_value(d)
 

@@ -99,6 +99,26 @@ class XmlPropertyListParserTest(unittest.TestCase):
         self.assert_('item 1' in plist)
         self.assertEqual(plist['item 1'], 'Hello')
 
+    def test_datetime_plist(self):
+        plist = parsePropertyList('datetime.plist')
+        self.assertNotNone(plist)
+        self.assertIsInstance(plist, list)
+        self.assertEqual(str(plist[0]), "2008-08-02 05:25:50")
+        self.assertEqual(str(plist[1]), "2008-08-02 05:25:00")
+        self.assertEqual(str(plist[2]), "2008-08-02 05:00:00")
+        self.assertEqual(str(plist[3]), "2008-08-02 00:00:00")
+        self.assertEqual(str(plist[4]), "2008-08-01 00:00:00")
+        self.assertEqual(str(plist[5]), "2008-01-01 00:00:00")
+
+    def test_invalid_datetime(self):
+        parser = XmlPropertyListParser()
+        self.assertRaises(XmlPropertyListParser.ParseError,
+            parser.parse,
+            '<plist version="1.0"><date></date></plist>')
+        self.assertRaises(XmlPropertyListParser.ParseError,
+            parser.parse,
+            '<plist version="1.0"><date>kasdhfksahkdfj</date></plist>')
+
     def test_elements_plist(self):
         plist = parsePropertyList('elements.plist')
         self.assertNotNone(plist)
