@@ -71,7 +71,7 @@ class XmlPropertyListParser(handler.ContentHandler):
     # XmlPropertyListParser private
     # ------------------------------------------------
     def _push_value(self, value):
-        if not self.__plist:
+        if self.__plist is None:
             self.__plist = value
         else:
             top = self.__stack[-1]
