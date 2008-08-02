@@ -126,15 +126,28 @@ class XmlPropertyListParser(handler.ContentHandler):
         self._push_value(base64.b64decode(content))
 
     def _parse_date(self, name, content):
-        #import time, datetime
-        #self._push_value(datetime.datetime(
-        #    *(time.strptime(content, "%Y-%m-%dT%H:%M:%SZ")[0:6])))
+        # http://www.apple.com/DTDs/PropertyList-1.0.dtd says:
+        #
+        # Contents should conform to a subset of ISO 8601 
+        # (in particular, YYYY '-' MM '-' DD 'T' HH ':' MM ':' SS 'Z'.
+        # Smaller units may be omitted with a loss of precision)
         import re, datetime
-        pat = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
-        m = pat.match(content)
-        if not m:
+        
+        units = ('year', 'month', 'day', 'hour', 'minute', 'second')
+        pattern = re.compile(r"(?P<year>\d\d\d\d)(?:-(?P<month>\d\d)(?:-(?P<day>\d\d)(?:T(?P<hour>\d\d)(?::(?P<minute>\d\d)(?::(?P<second>\d\d))?)?)?)?)?Z")
+        
+        match = pattern.match(content)
+        if not match:
             raise XmlPropertyListParser.ParseError("Failed to parse datetime '%s'" % content)
-        d = datetime.datetime(*([int(m.group(i)) for i in xrange(1, 7)]))
+
+        groups, components = match.groupdict(), []
+        for key in units:
+            value = groups[key]
+            if value is None:
+                break
+            components.append(int(value))
+
+        d = datetime.datetime(*components)
         self._push_value(d)
 
     def _parse_real(self, name, content):
