@@ -8,7 +8,7 @@ This file contains a class ``XmlPropertyListParser`` for parse
 a property list file and get back a python native data structure.
 
     :copyright: 2008 by Takanori Ishikawa <takanori.ishikawa@gmail.com>
-    :license: MIT (See LICENSE file)
+    :license: MIT (See LICENSE file for more details)
 
 .. _Property Lists: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
 """
@@ -21,6 +21,9 @@ class XmlPropertyListParser(handler.ContentHandler):
     convert `Property Lists`_ objects from xml format.
     Property list objects include ``string``, ``unicode``,
     ``list``, ``dict``, ``datetime``, and ``int`` or ``float``.
+
+        :copyright: 2008 by Takanori Ishikawa <takanori.ishikawa@gmail.com>
+        :license: MIT License
 
     .. _Property List: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
     """
