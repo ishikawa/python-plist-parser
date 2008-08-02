@@ -12,8 +12,7 @@ a property list file and get back a python native data structure.
 
 .. _Property Lists: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
 """
-import xml.sax
-from xml.sax import handler, xmlreader
+from xml.sax import make_parser, handler, xmlreader
 
 
 class XmlPropertyListParser(handler.ContentHandler):
@@ -179,7 +178,7 @@ class XmlPropertyListParser(handler.ContentHandler):
             return source
 
         source = make_source(xml_input)
-        reader = xml.sax.make_parser()
+        reader = make_parser()
         reader.setContentHandler(self)
         reader.parse(source)
         self._assert(
