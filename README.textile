@@ -53,6 +53,11 @@ h3. Requirement
 You need no third-party library other than **Python 2.4** or higher.
 
 
+h3. Notes
+
+* "plistlib":http://docs.python.org/dev/library/plistlib.html Python 2.6 shipped with plistlib module. This module was previously only available in the Mac-specific library
+
+
 h3. Copyright
 
 Copyright (c) 2008 **Takanori Ishikawa** "&lt;takanori.ishikawa&#64;gmail.com&gt;":mailto:takanori.ishikawa@gmail.com, All rights reserved.
