@@ -86,9 +86,6 @@ class XmlPropertyListParser(handler.ContentHandler):
                 raise XmlPropertyListParser.ParseError(
                     "multiple objects at top level")
 
-        if isinstance(value, (dict, list)):
-            values.append(value)
-
     def _pop_value(self):
         self.__stack.pop()
 
@@ -98,10 +95,14 @@ class XmlPropertyListParser(handler.ContentHandler):
             "version 1.0 is only supported, but was '%s'." % attrs.get('version'))
 
     def _start_array(self, name, attrs):
-        self._push_value(list())
+        v = list()
+        self._push_value(v)
+        self.__stack.append(v)
 
     def _start_dict(self, name, attrs):
-        self._push_value(dict())
+        v = dict()
+        self._push_value(v)
+        self.__stack.append(v)
 
     def _end_array(self, name):
         self._pop_value()
