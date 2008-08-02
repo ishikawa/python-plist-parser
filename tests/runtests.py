@@ -118,6 +118,9 @@ class XmlPropertyListParserTest(unittest.TestCase):
         self.assertRaises(XmlPropertyListParser.ParseError,
             parser.parse,
             '<plist version="1.0"><date>kasdhfksahkdfj</date></plist>')
+        self.assertRaises(XmlPropertyListParser.ParseError,
+            parser.parse,
+            '<plist version="1.0"><date> 2008-08-02T05:25:50Z</date></plist>')
 
     def test_elements_plist(self):
         plist = parsePropertyList('elements.plist')
