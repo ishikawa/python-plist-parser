@@ -134,10 +134,10 @@ class XmlPropertyListParser(handler.ContentHandler):
             *(time.strptime(content, "%Y-%m-%dT%H:%M:%SZ")[0:6])))
 
     def _parse_real(self, name, content):
-        self._push_value(float(content.strip()))
+        self._push_value(float(content))
 
     def _parse_integer(self, name, content):
-        self._push_value(int(content.strip()))
+        self._push_value(int(content))
 
     START_CALLBACKS = {
         'plist': _start_plist,
@@ -206,6 +206,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         xmlin = open(sys.argv[1])
         try:
-            print XmlPropertyListParser().parse(xmlin),
+            XmlPropertyListParser().parse(xmlin),
         finally:
             xmlin.close()
