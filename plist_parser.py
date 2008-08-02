@@ -126,9 +126,16 @@ class XmlPropertyListParser(handler.ContentHandler):
         self._push_value(base64.b64decode(content))
 
     def _parse_date(self, name, content):
-        import time, datetime
-        self._push_value(datetime.datetime(
-            *(time.strptime(content, "%Y-%m-%dT%H:%M:%SZ")[0:6])))
+        #import time, datetime
+        #self._push_value(datetime.datetime(
+        #    *(time.strptime(content, "%Y-%m-%dT%H:%M:%SZ")[0:6])))
+        import re, datetime
+        pat = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
+        m = pat.match(content)
+        if not m:
+            raise XmlPropertyListParser.ParseError("Failed to parse datetime '%s'" % content)
+        d = datetime.datetime(*([int(m.group(i)) for i in xrange(1, 7)]))
+        self._push_value(d)
 
     def _parse_real(self, name, content):
         self._push_value(float(content))
