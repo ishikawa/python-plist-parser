@@ -30,12 +30,6 @@ class XmlPropertyListParser(handler.ContentHandler):
         """Raised when parsing is failed."""
         pass
 
-    def __init__(self):
-        handler.ContentHandler.__init__(self)
-        self.__stack = None
-        self.__key = None
-        self.__characters = None
-
     def _assert(self, test, message):
         if not test:
             raise XmlPropertyListParser.ParseError(message)
@@ -45,19 +39,18 @@ class XmlPropertyListParser(handler.ContentHandler):
     # ------------------------------------------------
     def startDocument(self):
         self.__stack = []
+        self.__plist = None
         self.__key = None
         self.__characters = None
+
+    def endDocument(self):
+        self._assert(self.__plist is not None, "A top level element must be <plist>.")        
 
     def startElement(self, name, attributes):
         if name in XmlPropertyListParser.START_CALLBACKS:
             XmlPropertyListParser.START_CALLBACKS[name](self, name, attributes)
         if name in XmlPropertyListParser.PARSE_CALLBACKS:
             self.__characters = []
-
-        if name == 'plist':
-            self._assert(not self.__stack, "<plist> more than once.")
-        else:
-            self._assert(self.__stack, "A top level element must be <plist>.")
 
     def endElement(self, name):
         if name in XmlPropertyListParser.END_CALLBACKS:
@@ -76,8 +69,11 @@ class XmlPropertyListParser(handler.ContentHandler):
     # XmlPropertyListParser private
     # ------------------------------------------------
     def _push_value(self, value):
-        if self.__stack:
-            top = self.__stack[-1]
+        values = self.__stack
+        if not values:
+            self.__plist = value
+        else:
+            top = values[-1]
             if isinstance(top, dict):
                 self._assert(self.__key is not None, "Missing key for dictionary.")
                 top[self.__key] = value
@@ -87,16 +83,15 @@ class XmlPropertyListParser(handler.ContentHandler):
             else:
                 raise XmlPropertyListParser.ParseError(
                     "multiple objects at top level")
-        
-        if not self.__stack or isinstance(value, (dict, list)):
-            self.__stack.append(value)
+
+        if isinstance(value, (dict, list)):
+            values.append(value)
 
     def _pop_value(self):
-        if len(self.__stack) > 1:
-            self.__stack.pop()
+        self.__stack.pop()
 
     def _start_plist(self, name, attrs):
-        self._assert(len(self.__stack) is 0, "<plist> more than once.")
+        self._assert(not self.__stack and self.__plist is None, "<plist> more than once.")
         self._assert(attrs.get('version', '1.0') == '1.0',
             "version 1.0 is only supported, but was '%s'." % attrs.get('version'))
 
@@ -106,17 +101,17 @@ class XmlPropertyListParser(handler.ContentHandler):
     def _start_dict(self, name, attrs):
         self._push_value(dict())
 
-    def _start_true(self, name, attrs):
-        self._push_value(True)
-
-    def _start_false(self, name, attrs):
-        self._push_value(False)
-
     def _end_array(self, name):
         self._pop_value()
 
     def _end_dict(self, name):
         self._pop_value()
+
+    def _start_true(self, name, attrs):
+        self._push_value(True)
+
+    def _start_false(self, name, attrs):
+        self._push_value(False)
 
     def _parse_key(self, name, content):
         self.__key = content
@@ -188,9 +183,9 @@ class XmlPropertyListParser(handler.ContentHandler):
         reader.setContentHandler(self)
         reader.parse(source)
         self._assert(
-            len(self.__stack) is 1,
+            len(self.__stack) is 0,
             "multiple objects at top level.")
-        return self.__stack.pop()
+        return self.__plist
 
 
 if __name__ == '__main__':
@@ -206,6 +201,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         xmlin = open(sys.argv[1])
         try:
-            XmlPropertyListParser().parse(xmlin),
+            print XmlPropertyListParser().parse(xmlin),
         finally:
             xmlin.close()
