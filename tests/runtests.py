@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from plist_parser import XmlPropertyListParser
+from plist_parser import XmlPropertyListParser, PropertyListParseError
 
 # the directory contains sample .plist files
 PLIST_DIR = os.path.join(os.path.dirname(__file__), 'plist')
@@ -69,7 +69,7 @@ class XmlPropertyListParserTest(unittest.TestCase):
     def test_no_plist_xml(self):
         parser = XmlPropertyListParser()
         self.assertRaises(
-            XmlPropertyListParser.ParseError,
+            PropertyListParseError,
             parser.parse, '<not-plist />')
 
     def test_string_or_unicode_input(self):
@@ -77,7 +77,7 @@ class XmlPropertyListParserTest(unittest.TestCase):
         
     def test_multiple_plist(self):
         self.assertRaises(
-            XmlPropertyListParser.ParseError,
+            PropertyListParseError,
             parsePropertyList, 'multiple_plist.plist')
 
     def test_empty_dict_plist(self):
@@ -112,23 +112,23 @@ class XmlPropertyListParserTest(unittest.TestCase):
 
     def test_not_xml_plist(self):
         self.assertRaises(
-            XmlPropertyListParser.ParseError,
+            PropertyListParseError,
             parsePropertyList,
             'notxml.plist'
         )
 
     def test_invalid_datetime(self):
         parser = XmlPropertyListParser()
-        self.assertRaises(XmlPropertyListParser.ParseError,
+        self.assertRaises(PropertyListParseError,
             parser.parse,
             '<plist version="1.0"><date></date></plist>')
-        self.assertRaises(XmlPropertyListParser.ParseError,
+        self.assertRaises(PropertyListParseError,
             parser.parse,
             '<plist version="1.0"><date>kasdhfksahkdfj</date></plist>')
-        self.assertRaises(XmlPropertyListParser.ParseError,
+        self.assertRaises(PropertyListParseError,
             parser.parse,
             '<plist version="1.0"><date> 2008-08-02T05:25:50Z</date></plist>')
-        self.assertRaises(XmlPropertyListParser.ParseError,
+        self.assertRaises(PropertyListParseError,
             parser.parse,
             '<plist version="1.0"><date>2008-08-02T05:25:50Z </date></plist>')
 

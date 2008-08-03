@@ -15,6 +15,12 @@ a property list file and get back a python native data structure.
 from xml.sax import make_parser, handler, xmlreader, \
                     SAXParseException
 
+
+class PropertyListParseError(Exception):
+    """Raised when parsing a property list is failed."""
+    pass
+
+
 class XmlPropertyListParser(handler.ContentHandler):
     """
     The ``XmlPropertyListParser`` class provides methods that
@@ -28,13 +34,9 @@ class XmlPropertyListParser(handler.ContentHandler):
     .. _Property List: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
     """
 
-    class ParseError(Exception):
-        """Raised when parsing is failed."""
-        pass
-
     def _assert(self, test, message):
         if not test:
-            raise XmlPropertyListParser.ParseError(message)
+            raise PropertyListParseError(message)
 
     # ------------------------------------------------
     # SAX2: ContentHandler
@@ -82,7 +84,7 @@ class XmlPropertyListParser(handler.ContentHandler):
             elif isinstance(top, list):
                 top.append(value)
             else:
-                raise XmlPropertyListParser.ParseError(
+                raise PropertyListParseError(
                     "multiple objects at top level")
 
     def _pop_value(self):
@@ -138,7 +140,7 @@ class XmlPropertyListParser(handler.ContentHandler):
         
         match = pattern.match(content)
         if not match:
-            raise XmlPropertyListParser.ParseError("Failed to parse datetime '%s'" % content)
+            raise PropertyListParseError("Failed to parse datetime '%s'" % content)
 
         groups, components = match.groupdict(), []
         for key in units:
@@ -208,7 +210,7 @@ class XmlPropertyListParser(handler.ContentHandler):
         try:
             reader.parse(source)
         except SAXParseException, e:
-            raise XmlPropertyListParser.ParseError(e)
+            raise PropertyListParseError(e)
         else:
             self._assert(
                 len(self.__stack) is 0,
