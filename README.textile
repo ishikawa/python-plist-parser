@@ -15,7 +15,7 @@ You can run self-contained test, and parse any property list by running @plist_p
 
 h3. Usage
 
-This project provides two classes:
+This project provides two classes (in @plist_parser.py@ file):
 
 * **XmlPropertyListParser**
 * **PropertyListParseError**
