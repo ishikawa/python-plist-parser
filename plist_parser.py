@@ -134,7 +134,7 @@ class XmlPropertyListParser(handler.ContentHandler):
         import re, datetime
         
         units = ('year', 'month', 'day', 'hour', 'minute', 'second')
-        pattern = re.compile(r"(?P<year>\d\d\d\d)(?:-(?P<month>\d\d)(?:-(?P<day>\d\d)(?:T(?P<hour>\d\d)(?::(?P<minute>\d\d)(?::(?P<second>\d\d))?)?)?)?)?Z")
+        pattern = re.compile(r"(?P<year>\d\d\d\d)(?:-(?P<month>\d\d)(?:-(?P<day>\d\d)(?:T(?P<hour>\d\d)(?::(?P<minute>\d\d)(?::(?P<second>\d\d))?)?)?)?)?Z$")
         
         match = pattern.match(content)
         if not match:
