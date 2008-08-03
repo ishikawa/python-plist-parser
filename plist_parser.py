@@ -12,8 +12,8 @@ a property list file and get back a python native data structure.
 
 .. _Property Lists: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
 """
-from xml.sax import make_parser, handler, xmlreader
-
+from xml.sax import make_parser, handler, xmlreader, \
+                    SAXParseException
 
 class XmlPropertyListParser(handler.ContentHandler):
     """
@@ -205,10 +205,15 @@ class XmlPropertyListParser(handler.ContentHandler):
         source = make_source(xml_input)
         reader = make_parser()
         reader.setContentHandler(self)
-        reader.parse(source)
-        self._assert(
-            len(self.__stack) is 0,
-            "multiple objects at top level.")
+        try:
+            reader.parse(source)
+        except SAXParseException, e:
+            raise XmlPropertyListParser.ParseError(e)
+        else:
+            self._assert(
+                len(self.__stack) is 0,
+                "multiple objects at top level.")
+
         return self.__plist
 
 

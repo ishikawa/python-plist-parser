@@ -110,6 +110,13 @@ class XmlPropertyListParserTest(unittest.TestCase):
         self.assertEqual(str(plist[4]), "2008-08-01 00:00:00")
         self.assertEqual(str(plist[5]), "2008-01-01 00:00:00")
 
+    def test_not_xml_plist(self):
+        self.assertRaises(
+            XmlPropertyListParser.ParseError,
+            parsePropertyList,
+            'notxml.plist'
+        )
+
     def test_invalid_datetime(self):
         parser = XmlPropertyListParser()
         self.assertRaises(XmlPropertyListParser.ParseError,
