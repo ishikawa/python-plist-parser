@@ -199,7 +199,7 @@ class XmlPropertyListParser(handler.ContentHandler):
             source = xmlreader.InputSource()
             if isinstance(xml_input, basestring):
                 # Creates a string stream for in-memory contents.
-                from StringIO import StringIO
+                from cStringIO import StringIO
                 xml_input = StringIO(xml_input)
             source.setByteStream(xml_input)
             return source
