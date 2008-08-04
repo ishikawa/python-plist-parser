@@ -81,6 +81,16 @@ class XmlPropertyListGenericParserTest(unittest.TestCase):
             PropertyListParseError,
             self.parsePropertyList, 'multiple_plist.plist')
 
+    def test_multiple_top_level_plist(self):
+        self.assertRaises(
+            PropertyListParseError,
+            self.parsePropertyList, 'multiple_top_level.plist')
+
+    def test_invalid_key_plist(self):
+        self.assertRaises(
+            PropertyListParseError,
+            self.parsePropertyList, 'invalid_key.plist')
+
     def test_empty_dict_plist(self):
         plist = self.parsePropertyList('empty_dict.plist')
         self.assertNotNone(plist)

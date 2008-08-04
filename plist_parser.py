@@ -60,6 +60,9 @@ class XmlPropertyListParser(object):
         self.__plist = None
         self.__key = None
         self.__characters = None
+        # For reducing runtime type checking, 
+        # the parser caches top level object type.
+        self.__in_dict = False
 
     def endDocument(self):
         self._assert(self.__plist is not None, "A top level element must be <plist>.")        
@@ -99,23 +102,31 @@ class XmlPropertyListParser(object):
     # XmlPropertyListParser private
     # ------------------------------------------------
     def _push_value(self, value):
-        if self.__plist is None:
+        if not self.__stack:
+            self._assert(self.__plist is None, "Multiple objects at top level")
             self.__plist = value
         else:
             top = self.__stack[-1]
-            if isinstance(top, dict):
+            #assert isinstance(top, (dict, list))
+            if self.__in_dict:
                 k = self.__key
                 if k is None:
                     raise PropertyListParseError("Missing key for dictionary.")
                 top[k] = value
                 self.__key = None
-            elif isinstance(top, list):
-                top.append(value)
             else:
-                raise PropertyListParseError("multiple objects at top level")
+                top.append(value)
 
-    def _pop_value(self):
+    def _push_stack(self, value):
+        self.__stack.append(value)
+        self.__in_dict = isinstance(value, dict)
+
+    def _pop_stack(self):
         self.__stack.pop()
+        if self.__stack:
+            self.__in_dict = isinstance(self.__stack[-1], dict)
+        else:
+            self.__in_dict = False
 
     def _start_plist(self, name, attrs):
         self._assert(not self.__stack and self.__plist is None, "<plist> more than once.")
@@ -125,18 +136,20 @@ class XmlPropertyListParser(object):
     def _start_array(self, name, attrs):
         v = list()
         self._push_value(v)
-        self.__stack.append(v)
+        self._push_stack(v)
 
     def _start_dict(self, name, attrs):
         v = dict()
         self._push_value(v)
-        self.__stack.append(v)
+        self._push_stack(v)
 
     def _end_array(self, name):
-        self._pop_value()
+        self._pop_stack()
 
     def _end_dict(self, name):
-        self._pop_value()
+        if self.__key is not None:
+            raise PropertyListParseError("Missing value for key '%s'" % self.__key)
+        self._pop_stack()
 
     def _start_true(self, name, attrs):
         self._push_value(True)
@@ -146,6 +159,8 @@ class XmlPropertyListParser(object):
 
     def _parse_key(self, name, content):
         self.__key = content
+        if not self.__in_dict:
+            raise PropertyListParseError("<key> element must be in <dict> element.")
 
     def _parse_string(self, name, content):
         self._push_value(content)
