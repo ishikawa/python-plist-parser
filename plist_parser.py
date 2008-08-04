@@ -57,9 +57,7 @@ class XmlPropertyListParser(object):
 
     def startDocument(self):
         self.__stack = []
-        self.__plist = None
-        self.__key = None
-        self.__characters = None
+        self.__plist = self.__key = self.__characters = None
         # For reducing runtime type checking, 
         # the parser caches top level object type.
         self.__in_dict = False
@@ -82,21 +80,18 @@ class XmlPropertyListParser(object):
         if name in XmlPropertyListParser.PARSE_CALLBACKS:
             # Creates character string from buffered characters.
             content = ''.join(self.__characters)
-            XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, self._fixtext(content))
+            # For compatibility with ``xml.etree`` and ``plistlib``,
+            # convert text string to ascii, if possible
+            try:
+                content = content.encode('ascii')
+            except (UnicodeError, AttributeError):
+                pass
+            XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, content)
             self.__characters = None
 
     def characters(self, content):
         if self.__characters is not None:
             self.__characters.append(content)
-
-    def _fixtext(self, text):
-        # For compatibility with xml.etree,
-        # convert text string to ascii, if possible
-        try:
-            return text.encode("ascii")
-        except (UnicodeError, AttributeError):
-            # assume the string uses the right encoding
-            return text
 
     # ------------------------------------------------
     # XmlPropertyListParser private
@@ -123,10 +118,7 @@ class XmlPropertyListParser(object):
 
     def _pop_stack(self):
         self.__stack.pop()
-        if self.__stack:
-            self.__in_dict = isinstance(self.__stack[-1], dict)
-        else:
-            self.__in_dict = False
+        self.__in_dict = self.__stack and isinstance(self.__stack[-1], dict)
 
     def _start_plist(self, name, attrs):
         self._assert(not self.__stack and self.__plist is None, "<plist> more than once.")
@@ -158,9 +150,9 @@ class XmlPropertyListParser(object):
         self._push_value(False)
 
     def _parse_key(self, name, content):
-        self.__key = content
         if not self.__in_dict:
             raise PropertyListParseError("<key> element must be in <dict> element.")
+        self.__key = content
 
     def _parse_string(self, name, content):
         self._push_value(content)
