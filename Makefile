@@ -1,5 +1,5 @@
 #
-# Makefile for AppleScriptLexer
+# Makefile
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Combines scripts for common tasks.
