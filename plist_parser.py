@@ -292,6 +292,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         xmlin = open(sys.argv[1])
         try:
-            XmlPropertyListParser().parse(xmlin),
+            print XmlPropertyListParser().parse(xmlin),
         finally:
             xmlin.close()
