@@ -237,6 +237,7 @@ class XmlPropertyListParser(object):
                         XmlPropertyListParser.END_CALLBACKS[name](self, name)
                     if name in XmlPropertyListParser.PARSE_CALLBACKS:
                         XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, element.text or "")
+                    element.clear()
         except SyntaxError, e:
             raise PropertyListParseError(e)
 
