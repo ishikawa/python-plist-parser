@@ -2,6 +2,6 @@ h2. Todo List for Development
 
 This is a collection of the various things which it would be nice to include in software. Thay may or may not be scheduled.
 
-* Performance improvement
-* More tests
+* -Performance improvement-
+* -More tests-
 * Supporting other formats ("Old ASCII style":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/Articles/OldStylePListsConcept.html#//apple_ref/doc/uid/20001012, "Binary form":http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/Articles/SerializedPListsConcept.html#//apple_ref/doc/uid/20001013)?
