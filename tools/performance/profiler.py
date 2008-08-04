@@ -16,14 +16,15 @@ else:
     timer = time.time
 
 def timeit(number, func):
-    gc.disable()
-    t0 = timer()
+    elapsed = 0.0
     for i in range(0, number):
+        gc.disable()
+        t = timer()
         func()
-    t1 = timer()
-    gc.enable()
-
-    return t1 - t0
+        elapsed += (timer() - t)
+        gc.enable()
+        gc.collect()
+    return elapsed
 
 # Make libraries visible
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
