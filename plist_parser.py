@@ -231,14 +231,11 @@ class XmlPropertyListParser(object):
                 name = element.tag
                 if action == 'start':
                     if name in XmlPropertyListParser.START_CALLBACKS:
-                        #print "start", element.tag, element.attrib
                         XmlPropertyListParser.START_CALLBACKS[name](self, element.tag, element.attrib)
                 elif action == 'end':
                     if name in XmlPropertyListParser.END_CALLBACKS:
-                        #print "end", element.tag, element.attrib
                         XmlPropertyListParser.END_CALLBACKS[name](self, name)
                     if name in XmlPropertyListParser.PARSE_CALLBACKS:
-                        #print "parse", element.tag, element.text
                         XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, element.text or "")
         except SyntaxError, e:
             raise PropertyListParseError(e)
