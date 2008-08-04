@@ -45,7 +45,7 @@ Second, invoke @parse@ method with XML contents or file-like object.
   </dict>
 </plist>
 """)
-{u'Python': u'.py'}
+{'Python': '.py'}
 </code></pre>
 
 or
@@ -62,6 +62,11 @@ finally:
 h3. Requirement
 
 You need no third-party library other than **Python 2.4** or higher.
+
+The @XmlPropertyListParser@ class internally uses builtin libraries (listed below) to parse XML file.
+
+* @xml.sax@
+* or The C implementation of @xml.etree@ if available (@xml.etree@ is new in Python 2.5)
 
 
 h3. Notes
