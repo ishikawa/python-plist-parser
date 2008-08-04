@@ -12,16 +12,13 @@ a property list file and get back a python native data structure.
 
 .. _Property Lists: http://developer.apple.com/documentation/Cocoa/Conceptual/PropertyLists/
 """
-from xml.sax import make_parser, handler, xmlreader, \
-                    SAXParseException
-
 
 class PropertyListParseError(Exception):
     """Raised when parsing a property list is failed."""
     pass
 
 
-class XmlPropertyListParser(handler.ContentHandler):
+class XmlPropertyListParser(object):
     """
     The ``XmlPropertyListParser`` class provides methods that
     convert `Property Lists`_ objects from xml format.
@@ -41,6 +38,23 @@ class XmlPropertyListParser(handler.ContentHandler):
     # ------------------------------------------------
     # SAX2: ContentHandler
     # ------------------------------------------------
+    def setDocumentLocator(self, locator):
+        pass
+    def startPrefixMapping(self, prefix, uri):
+        pass
+    def endPrefixMapping(self, prefix):
+        pass
+    def startElementNS(self, name, qname, attrs):
+        pass
+    def endElementNS(self, name, qname):
+        pass
+    def ignorableWhitespace(self, whitespace):
+        pass
+    def processingInstruction(self, target, data):
+        pass
+    def skippedEntity(self, name):
+        pass
+
     def startDocument(self):
         self.__stack = []
         self.__plist = None
@@ -49,6 +63,9 @@ class XmlPropertyListParser(handler.ContentHandler):
 
     def endDocument(self):
         self._assert(self.__plist is not None, "A top level element must be <plist>.")        
+        self._assert(
+            len(self.__stack) is 0,
+            "multiple objects at top level.")
 
     def startElement(self, name, attributes):
         if name in XmlPropertyListParser.START_CALLBACKS:
@@ -62,12 +79,21 @@ class XmlPropertyListParser(handler.ContentHandler):
         if name in XmlPropertyListParser.PARSE_CALLBACKS:
             # Creates character string from buffered characters.
             content = ''.join(self.__characters)
-            XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, content)
+            XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, self._fixtext(content))
             self.__characters = None
 
     def characters(self, content):
         if self.__characters is not None:
             self.__characters.append(content)
+
+    def _fixtext(self, text):
+        # For compatibility with xml.etree,
+        # convert text string to ascii, if possible
+        try:
+            return text.encode("ascii")
+        except (UnicodeError, AttributeError):
+            # assume the string uses the right encoding
+            return text
 
     # ------------------------------------------------
     # XmlPropertyListParser private
@@ -185,38 +211,71 @@ class XmlPropertyListParser(handler.ContentHandler):
     # ------------------------------------------------
     # XmlPropertyListParser
     # ------------------------------------------------
-    def parse(self, xml_input):
-        """
-        Parse the property list (`.plist`, `.xml, for example) ``xml_input``,
-        which can be either a string or a file-like object.
+    def _to_stream(self, io_or_string):
+        if isinstance(io_or_string, basestring):
+            # Creates a string stream for in-memory contents.
+            from cStringIO import StringIO
+            return StringIO(io_or_string)
+        elif hasattr(io_or_string, 'read') and callable(getattr(io_or_string, 'read')):
+            return io_or_string
+        else:
+            raise TypeError('Can\'t convert %s to file-like-object' % type(io_or_string))
         
-        >>> parser = XmlPropertyListParser()
-        >>> parser.parse(r'<plist version="1.0"><dict><key>Python</key><string>.py</string></dict></plist>')
-        {u'Python': u'.py'}
-        """
+    def _parse_using_etree(self, xml_input):
+        from xml.etree.cElementTree import iterparse
 
-        def make_source(xml_input):
-            source = xmlreader.InputSource()
-            if isinstance(xml_input, basestring):
-                # Creates a string stream for in-memory contents.
-                from cStringIO import StringIO
-                xml_input = StringIO(xml_input)
-            source.setByteStream(xml_input)
-            return source
+        parser = iterparse(self._to_stream(xml_input), events=('start', 'end'))
+        self.startDocument()
+        try:
+            for action, element in parser:
+                name = element.tag
+                if action == 'start':
+                    if name in XmlPropertyListParser.START_CALLBACKS:
+                        #print "start", element.tag, element.attrib
+                        XmlPropertyListParser.START_CALLBACKS[name](self, element.tag, element.attrib)
+                elif action == 'end':
+                    if name in XmlPropertyListParser.END_CALLBACKS:
+                        #print "end", element.tag, element.attrib
+                        XmlPropertyListParser.END_CALLBACKS[name](self, name)
+                    if name in XmlPropertyListParser.PARSE_CALLBACKS:
+                        #print "parse", element.tag, element.text
+                        XmlPropertyListParser.PARSE_CALLBACKS[name](self, name, element.text or "")
+        except SyntaxError, e:
+            raise PropertyListParseError(e)
 
-        source = make_source(xml_input)
+        self.endDocument()
+        return self.__plist
+
+    def _parse_using_sax_parser(self, xml_input):
+        from xml.sax import make_parser, handler, xmlreader, \
+                            SAXParseException
+        source = xmlreader.InputSource()
+        source.setByteStream(self._to_stream(xml_input))
         reader = make_parser()
         reader.setContentHandler(self)
         try:
             reader.parse(source)
         except SAXParseException, e:
             raise PropertyListParseError(e)
-        else:
-            self._assert(
-                len(self.__stack) is 0,
-                "multiple objects at top level.")
 
         return self.__plist
+
+    def parse(self, xml_input):
+        """
+        Parse the property list (`.plist`, `.xml, for example) ``xml_input``,
+        which can be either a string or a file-like object.
+        
+        >>> parser = XmlPropertyListParser()
+        >>> parser.parse(r'<plist version="1.0">'
+        ...              r'<dict><key>Python</key><string>.py</string></dict>'
+        ...              r'</plist>')
+        {'Python': '.py'}
+        """
+        try:
+            return self._parse_using_etree(xml_input)
+        except ImportError:
+            # No xml.etree.ccElementTree found.
+            return self._parse_using_sax_parser(xml_input)
 
 
 if __name__ == '__main__':

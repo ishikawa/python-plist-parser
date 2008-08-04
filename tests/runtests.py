@@ -3,6 +3,7 @@
 import os
 import sys
 import unittest
+from test import test_support
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from plist_parser import XmlPropertyListParser, PropertyListParseError
@@ -20,21 +21,23 @@ def readPropertyListContents(name):
     finally:
         xmlin.close()
 
-def parsePropertyList(name):
-    parser = XmlPropertyListParser()
-    xmlin = open(getPropertyListFilepath(name))
-    try:
-        return parser.parse(xmlin)
-    finally:
-        xmlin.close()
-
-
 # Non-ASCII Strings...
 JP_JAPANESE = u'\u65e5\u672c\u8a9e' # 'Japanese' in Japanese
 JP_HELLO = u'\u3053\u3093\u306b\u3061\u306f' # 'Hello' in Japanese
 
 
-class XmlPropertyListParserTest(unittest.TestCase):
+class XmlPropertyListGenericParserTest(unittest.TestCase):
+
+    def parse(self, xmlin):
+        parser = XmlPropertyListParser()
+        return parser.parse(xmlin)
+
+    def parsePropertyList(self, name):
+        xmlin = open(getPropertyListFilepath(name))
+        try:
+            return self.parse(xmlin)
+        finally:
+            xmlin.close()
 
     def assertNotNone(self, obj):
         self.assert_(obj is not None)
@@ -45,14 +48,13 @@ class XmlPropertyListParserTest(unittest.TestCase):
             "Expected '%s' instance, but was '%s'" % (expected_type, type(obj)))
 
     def _testAcceptingStringOrUnicodeInput(self, plist_name):
-        parser = XmlPropertyListParser()
         contents = readPropertyListContents(plist_name)
-        self.assert_(parser.parse(contents) is not None)
+        self.assert_(self.parse(contents) is not None)
         unicode_contents = unicode(contents, 'utf-8')
-        self.assert_(parser.parse(unicode_contents) is not None)
+        self.assert_(self.parse(unicode_contents) is not None)
         
     def _testNonASCIIEncoding(self, plist_name):
-        plist = parsePropertyList(plist_name)
+        plist = self.parsePropertyList(plist_name)
         self.assertNotNone(plist)
         self.assertIsInstance(plist, dict)
         self.assert_(JP_JAPANESE in plist)
@@ -67,10 +69,9 @@ class XmlPropertyListParserTest(unittest.TestCase):
 
 
     def test_no_plist_xml(self):
-        parser = XmlPropertyListParser()
         self.assertRaises(
             PropertyListParseError,
-            parser.parse, '<not-plist />')
+            self.parse, '<not-plist />')
 
     def test_string_or_unicode_input(self):
         self._testAcceptingStringOrUnicodeInput("empty_dict.plist")
@@ -78,29 +79,29 @@ class XmlPropertyListParserTest(unittest.TestCase):
     def test_multiple_plist(self):
         self.assertRaises(
             PropertyListParseError,
-            parsePropertyList, 'multiple_plist.plist')
+            self.parsePropertyList, 'multiple_plist.plist')
 
     def test_empty_dict_plist(self):
-        plist = parsePropertyList('empty_dict.plist')
+        plist = self.parsePropertyList('empty_dict.plist')
         self.assertNotNone(plist)
         self.assertIsInstance(plist, dict)
         self.assert_(len(plist) is 0)
 
     def test_empty_array_plist(self):
-        plist = parsePropertyList('empty_array.plist')
+        plist = self.parsePropertyList('empty_array.plist')
         self.assertNotNone(plist)
         self.assertIsInstance(plist, list)
         self.assert_(len(plist) is 0)
 
     def test_simple_plist(self):
-        plist = parsePropertyList('simple.plist')
+        plist = self.parsePropertyList('simple.plist')
         self.assertNotNone(plist)
         self.assertIsInstance(plist, dict)
         self.assert_('item 1' in plist)
         self.assertEqual(plist['item 1'], 'Hello')
 
     def test_datetime_plist(self):
-        plist = parsePropertyList('datetime.plist')
+        plist = self.parsePropertyList('datetime.plist')
         self.assertNotNone(plist)
         self.assertIsInstance(plist, list)
         self.assertEqual(str(plist[0]), "2008-08-02 05:25:50")
@@ -113,27 +114,26 @@ class XmlPropertyListParserTest(unittest.TestCase):
     def test_not_xml_plist(self):
         self.assertRaises(
             PropertyListParseError,
-            parsePropertyList,
+            self.parsePropertyList,
             'notxml.plist'
         )
 
     def test_invalid_datetime(self):
-        parser = XmlPropertyListParser()
         self.assertRaises(PropertyListParseError,
-            parser.parse,
+            self.parse,
             '<plist version="1.0"><date></date></plist>')
         self.assertRaises(PropertyListParseError,
-            parser.parse,
+            self.parse,
             '<plist version="1.0"><date>kasdhfksahkdfj</date></plist>')
         self.assertRaises(PropertyListParseError,
-            parser.parse,
+            self.parse,
             '<plist version="1.0"><date> 2008-08-02T05:25:50Z</date></plist>')
         self.assertRaises(PropertyListParseError,
-            parser.parse,
+            self.parse,
             '<plist version="1.0"><date>2008-08-02T05:25:50Z </date></plist>')
 
     def test_elements_plist(self):
-        plist = parsePropertyList('elements.plist')
+        plist = self.parsePropertyList('elements.plist')
         self.assertNotNone(plist)
         self.assertIsInstance(plist, dict)
 
@@ -156,5 +156,32 @@ class XmlPropertyListParserTest(unittest.TestCase):
         self.assertEqual(item[2][0]['item'], 1)
 
 
+class XmlPropertyListSAXParserTest(XmlPropertyListGenericParserTest):
+
+    def parse(self, xmlin):
+        parser = XmlPropertyListParser()
+        return parser._parse_using_etree(xmlin)
+        
+
+class XmlPropertyListEtreeParserTest(XmlPropertyListGenericParserTest):
+
+    def parse(self, xmlin):
+        parser = XmlPropertyListParser()
+        return parser._parse_using_sax_parser(xmlin)
+
+
 if __name__ == "__main__":
-    unittest.main()
+    loader = unittest.defaultTestLoader
+    suite = unittest.TestSuite()
+    suite.addTest(loader.loadTestsFromTestCase(XmlPropertyListGenericParserTest))
+    suite.addTest(loader.loadTestsFromTestCase(XmlPropertyListSAXParserTest))
+    try:
+        from xml.etree.cElementTree import iterparse
+    except ImportError:
+        pass
+    else:
+        suite.addTest(loader.loadTestsFromTestCase(XmlPropertyListEtreeParserTest))
+
+    runner = unittest.TextTestRunner(verbosity=1)
+    result = runner.run(suite)
+    sys.exit(not result.wasSuccessful())
