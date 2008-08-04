@@ -104,14 +104,15 @@ class XmlPropertyListParser(object):
         else:
             top = self.__stack[-1]
             if isinstance(top, dict):
-                self._assert(self.__key is not None, "Missing key for dictionary.")
-                top[self.__key] = value
+                k = self.__key
+                if k is None:
+                    raise PropertyListParseError("Missing key for dictionary.")
+                top[k] = value
                 self.__key = None
             elif isinstance(top, list):
                 top.append(value)
             else:
-                raise PropertyListParseError(
-                    "multiple objects at top level")
+                raise PropertyListParseError("multiple objects at top level")
 
     def _pop_value(self):
         self.__stack.pop()
@@ -153,17 +154,19 @@ class XmlPropertyListParser(object):
         import base64
         self._push_value(base64.b64decode(content))
 
+    # http://www.apple.com/DTDs/PropertyList-1.0.dtd says:
+    #
+    # Contents should conform to a subset of ISO 8601 
+    # (in particular, YYYY '-' MM '-' DD 'T' HH ':' MM ':' SS 'Z'.
+    # Smaller units may be omitted with a loss of precision)
+    import re
+    DATETIME_PATTERN = re.compile(r"(?P<year>\d\d\d\d)(?:-(?P<month>\d\d)(?:-(?P<day>\d\d)(?:T(?P<hour>\d\d)(?::(?P<minute>\d\d)(?::(?P<second>\d\d))?)?)?)?)?Z$")
+
     def _parse_date(self, name, content):
-        # http://www.apple.com/DTDs/PropertyList-1.0.dtd says:
-        #
-        # Contents should conform to a subset of ISO 8601 
-        # (in particular, YYYY '-' MM '-' DD 'T' HH ':' MM ':' SS 'Z'.
-        # Smaller units may be omitted with a loss of precision)
-        import re, datetime
+        import datetime
         
-        units = ('year', 'month', 'day', 'hour', 'minute', 'second')
-        pattern = re.compile(r"(?P<year>\d\d\d\d)(?:-(?P<month>\d\d)(?:-(?P<day>\d\d)(?:T(?P<hour>\d\d)(?::(?P<minute>\d\d)(?::(?P<second>\d\d))?)?)?)?)?Z$")
-        
+        units = ('year', 'month', 'day', 'hour', 'minute', 'second', )
+        pattern = XmlPropertyListParser.DATETIME_PATTERN
         match = pattern.match(content)
         if not match:
             raise PropertyListParseError("Failed to parse datetime '%s'" % content)
@@ -174,9 +177,9 @@ class XmlPropertyListParser(object):
             if value is None:
                 break
             components.append(int(value))
-        
         while len(components) < 3:
             components.append(1)
+
         d = datetime.datetime(*components)
         self._push_value(d)
 
@@ -289,6 +292,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         xmlin = open(sys.argv[1])
         try:
-            print XmlPropertyListParser().parse(xmlin),
+            XmlPropertyListParser().parse(xmlin),
         finally:
             xmlin.close()
